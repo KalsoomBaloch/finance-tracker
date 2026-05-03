@@ -181,6 +181,14 @@
     <span class="nav-label">Manage</span>
     <div class="nav-item" data-section="add"><span class="nav-icon">＋</span> Add Transaction</div>
     <div class="nav-item" data-section="history"><span class="nav-icon">≡</span> History</div>
+    <div style="margin-top:auto;padding-top:16px;border-top:1px solid var(--border);margin-left:0;margin-right:0;">
+  <div class="nav-item" onclick="resetData()" style="color:var(--text-3);font-size:12px;">
+    <span class="nav-icon">↺</span> Reset Demo Data
+    <div class="nav-item" onclick="exportCSV()" style="color:var(--text-3);font-size:12px;">
+  <span class="nav-icon">↓</span> Export CSV
+</div>
+  </div>
+</div>
   </nav>
 
   <main class="main">
@@ -315,7 +323,18 @@ const CAT_COLORS = {
   'Salary':'#6a9c7a','Freelance':'#7a9cb8','Business':'#6a7a9c','Investment':'#8a7ab8','Gift':'#b87a9a','Other Income':'#8a9c6a'
 };
 
-let transactions = JSON.parse(localStorage.getItem('ledger_txns') || '[]');
+let transactions = JSON.parse(localStorage.getItem('ledger_txns') || 'let transactions = JSON.parse(localStorage.getItem('ledger_txns') || JSON.stringify([
+  { id: '1', type: 'income', amount: 85000, date: '2025-05-01', category: 'Salary', desc: 'Monthly Salary' },
+  { id: '2', type: 'income', amount: 12000, date: '2025-05-03', category: 'Freelance', desc: 'Website project' },
+  { id: '3', type: 'expense', amount: 25000, date: '2025-05-04', category: 'Rent', desc: 'House rent' },
+  { id: '4', type: 'expense', amount: 4500, date: '2025-05-05', category: 'Food', desc: 'Groceries' },
+  { id: '5', type: 'expense', amount: 2000, date: '2025-05-06', category: 'Transport', desc: 'Uber rides' },
+  { id: '6', type: 'expense', amount: 3500, date: '2025-05-07', category: 'Shopping', desc: 'Clothes' },
+  { id: '7', type: 'income', amount: 8000, date: '2025-04-15', category: 'Freelance', desc: 'Logo design' },
+  { id: '8', type: 'expense', amount: 1800, date: '2025-04-18', category: 'Utilities', desc: 'Electricity bill' },
+  { id: '9', type: 'expense', amount: 900, date: '2025-04-20', category: 'Healthcare', desc: 'Pharmacy' },
+  { id: '10', type: 'income', amount: 5000, date: '2025-03-10', category: 'Gift', desc: 'Eid gift' }
+]));');
 let currentType = 'income', editId = null, editType = 'income';
 let pieChart = null, barChart = null;
 
@@ -403,7 +422,23 @@ function saveEdit() {
   save(); renderAll(); closeModal(); showToast('✓ Updated');
 }
 function closeModal() { document.getElementById('editModal').classList.remove('open'); editId = null; }
-
+function resetData() {
+  if (confirm('Reset all data and reload sample transactions?')) {
+    localStorage.removeItem('ledger_txns');
+    location.reload();
+  }
+}
+  function exportCSV() {
+  if (!transactions.length) return showToast('No data to export');
+  const rows = [['Date','Type','Category','Description','Amount (PKR)']];
+  transactions.forEach(t => rows.push([t.date, t.type, t.category, t.desc, t.amount]));
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'ledger-export.csv';
+  a.click();
+  showToast('✓ CSV downloaded');
+}
 function renderAll() { renderDashboard(); renderHistory(); }
 function renderDashboard() {
   const inc = transactions.filter(t => t.type === 'income');
